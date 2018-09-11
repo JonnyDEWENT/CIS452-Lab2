@@ -4,19 +4,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char* argv[])
-{
+int main(void) {
+	char *argv[64];
+	char *buffer = malloc(sizeof(char)*1000);
+    pid_t  pid;
+    int    status;
+    
 	while(1){
-		char buffer[20];
-		fgets(buffer,20,stdin);
-		if(!strncmp("quit",buffer,4))
-	  		exit(1);
-    if (execvp(argv[1], &argv[1]) < 0) {
-        perror("exec failed");
-        exit(1);
-    }
-    puts("After the exec");
-
-    return 0;
-}
+		printf("[Shell] -> ");
+        
+        if(fgets(buffer,sizeof(buffer),stdin) == NULL){
+            perror("Failed to get user input");
+            exit(1);
+        }
+        
+		if(!strncmp("quit",buffer,4)){
+			exit(1);
+		}
+        // Tokenizing the user input
+        argv[0]=strtok (buffer, " \t\r\n\f\v\0");
+        argv[1]=strtok (NULL, " \t\r\n\f\v\0");
+		
+        pid = fork();                       /* Fork a child. */
+        if(pid < 0){                        /* Chek check if the fork fail or not. */
+            perror("Failed to fork a child");
+            exit(1);
+        }
+        else if(pid == 0){                  /* The child, execute. */
+            if (execvp(*argv, argv) < 0) {
+                perror("exec failed");
+                exit(1);
+            }
+        }
+        else{                               /* The parent, wait for child to finish. */
+            while(wait(&status) != pid)
+                printf("Waiting for child to finish");
+        }
+	}
+    return 1;
 } 
