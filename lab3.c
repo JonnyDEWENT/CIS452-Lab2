@@ -10,7 +10,8 @@ int main()
     int parentID = getpid();
     int pid;
     if((pid = fork()) < 0) {
-        
+        perror ("fork error"); 
+        exit(1); 
     }
     
     // Child process handling
