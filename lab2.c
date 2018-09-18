@@ -1,58 +1,79 @@
+#include <stdio.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <signal.h>
-#include <stdio.h>
+#include <string.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
+/***********************************************************************
+ * This program simulate a simple shell, it will take in shell command
+ * and execute the command, also the program will print each execution
+ * CPU time and any involuntary context switches.
+ *
+ * @author Dewent, Jon
+ * @author Li, Cheng
+ * @version September 12, 2018
+ **********************************************************************/
 
-void sigHandler (int);
-
-int main()
-{
-    int parentID = getpid();
-    int pid;
-    if((pid = fork()) < 0) {
-        
-    }
+int main(void) {
+    /* An array of pointers pointing to user enter arguments. */
+    char *argv[64];
     
-    // Child process handling
-    if (!pid){
-        while(1){
-            int randomTime = (rand() % 5)+1;
-            sleep(randomTime);
-            int randomSignal = rand() % 2;
-            if(randomSignal)
-                kill(parentID, SIGUSR2);
-            else
-                kill(parentID, SIGUSR1);
+    /* Buffer reads user input line. */
+    char buffer[1000];
+    
+    /* Parent pid and child status. */
+    pid_t  pid;
+    int status;
+    
+    /* Variable declared to get resource usage. */
+    struct rusage* pusage = malloc(sizeof(struct rusage*));
+    int* childpid = malloc(sizeof(int*));
+    
+    while(1){
+        printf("[Shell] -> ");
+        
+        /* Read user input */
+        if(fgets(buffer,sizeof(buffer),stdin) == NULL){
+            perror("Failed to get user input");
+            exit(1);
+        }
+        
+        /* Exiting program when user types quit */
+        if(!strncmp("quit",buffer,4)){
+			/* Free malloc */
+            free(pusage);
+			free(childpid);
+            exit(1);
+        }
+        /* Tokenizing the user input */
+        argv[0]=strtok (buffer, " \t\r\n\f\v\0");
+        argv[1]=strtok (NULL, " \t\r\n\f\v\0");
+        
+        pid = fork();                       /* Fork a child. */
+        if(pid < 0){                        /* Chek check if the fork fail or not. */
+            perror("Failed to fork a child");
+            exit(1);
+        }
+        
+        else if(pid == 0){                  /* The child, execute. */
+            
+            /* getting process resource statistics and printing */
+            getrusage(RUSAGE_SELF, pusage);
+            *childpid = getpid();
+            printf("\n\nPROCESS PID: %i\nUSER CPU TIME: %ld.%ld\nINVOLUNTARY CONTEXT SWITCHES: %ld\n\n\n", *childpid, pusage->ru_utime.tv_sec,pusage->ru_utime.tv_usec, pusage->ru_nivcsw);
+			
+            /* Execute command line input */
+            if (execvp(*argv, argv) < 0) {
+                perror("exec failed");
+                exit(1);
+            } 
+        }
+        
+        else{                               /* The parent waits for child to finish. */
+            wait(&status);
         }
     }
-    
-    // Parent process handling
-    printf("Spawned child PID# %d\n",pid);
-    while(1) {
-        printf("waiting...\t");
-        fflush(stdout);
-        signal (SIGINT, sigHandler);
-        signal (SIGUSR1, sigHandler);
-        signal (SIGUSR2, sigHandler);
-        pause();
-    }
-    
-    return 0;
-}
-
-// This function handles signal SIGINT and terminates the processes
-void sigHandler (int sigNum)
-{
-    if(sigNum == SIGUSR1){
-        printf ("received a SIGUSR1 signal.\n");
-    }
-    else if(sigNum == SIGUSR2){
-        printf ("received a SIGUSR2 signal.\n");
-    }
-    else{
-        printf (" received. Thats it, I'm shutting you down...\n");
-        // this is where shutdown code would be inserted
-        sleep (1);
-        exit(0);
-    }
+    return 1;
 }
