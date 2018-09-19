@@ -4,16 +4,18 @@
 #include <stdio.h>
 
 void sigHandler (int);
+pid_t *childPid;
 
 int main()
 {
+    childPid = malloc(sizeof(int*));
     int parentID = getpid();
     int pid;
     if((pid = fork()) < 0) {
-        perror ("fork error"); 
-        exit(1); 
+        perror ("fork error");
+        exit(1);
     }
-    
+
     // Child process handling
     if (!pid){
         while(1){
@@ -26,9 +28,10 @@ int main()
                 kill(parentID, SIGUSR1);
         }
     }
-    
+
     // Parent process handling
     printf("Spawned child PID# %d\n",pid);
+    *childPid = pid;
     while(1) {
         printf("waiting...\t");
         fflush(stdout);
@@ -37,7 +40,7 @@ int main()
         signal (SIGUSR2, sigHandler);
         pause();
     }
-    
+
     return 0;
 }
 
@@ -51,9 +54,12 @@ void sigHandler (int sigNum)
         printf ("received a SIGUSR2 signal.\n");
     }
     else{
+
         printf (" received. Thats it, I'm shutting you down...\n");
         // this is where shutdown code would be inserted
         sleep (1);
+        kill(*childPid, SIGINT);
+        free(childPid);
         exit(0);
     }
 }
