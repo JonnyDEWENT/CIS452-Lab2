@@ -3,6 +3,16 @@
 #include <signal.h>
 #include <stdio.h>
 
+/***********************************************************************
+ * This program is a simple Communicating Processes, it will communicate
+ * between the parent and child regarding signals send, and quit
+ * elegantly when ^C is send.
+ *
+ * @author Dewent, Jon
+ * @author Li, Cheng
+ * @version September 19, 2018
+ **********************************************************************/
+
 void sigHandler (int);
 pid_t *childPid;
 
@@ -19,9 +29,9 @@ int main()
     // Child process handling
     if (!pid){
         while(1){
-            int randomTime = (rand() % 5)+1;
+            int randomTime = (rand() % 5)+1; /* Wait a time of 1-5 secs*/
             sleep(randomTime);
-            int randomSignal = rand() % 2;
+            int randomSignal = rand() % 2;  /* decide to send which signal */
             if(randomSignal)
                 kill(parentID, SIGUSR2);
             else
@@ -35,7 +45,7 @@ int main()
     while(1) {
         printf("waiting...\t");
         fflush(stdout);
-        signal (SIGINT, sigHandler);
+        signal (SIGINT, sigHandler);        /* Signal handlers */
         signal (SIGUSR1, sigHandler);
         signal (SIGUSR2, sigHandler);
         pause();
