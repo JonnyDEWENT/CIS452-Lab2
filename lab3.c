@@ -54,7 +54,6 @@ void sigHandler (int sigNum)
         printf ("received a SIGUSR2 signal.\n");
     }
     else{
-
         printf (" received. Thats it, I'm shutting you down...\n");
         // this is where shutdown code would be inserted
         sleep (1);
