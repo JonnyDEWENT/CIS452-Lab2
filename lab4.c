@@ -19,12 +19,11 @@ int main()
     signal (SIGINT, sigHandler);
     while (fgets(filename, 100, stdin) != NULL) {
         int status;
-        
+
         if ((status = pthread_create (&thread, NULL,  fileGet, filename) != 0)) {
             fprintf (stderr, "thread create error %d: %s\n", status, strerror(status));
             exit (1);
         }
-
         filesAccessed++;
     }
 }
@@ -43,6 +42,8 @@ void sigHandler (int sigNum)
 }
 
 void* fileGet(void* arg){
+    char* temp = malloc(1000*sizeof(char));
+    strcpy(temp,arg);
     int wait = rand() % 5;
     if(wait > 0){
         sleep(1);
@@ -51,7 +52,8 @@ void* fileGet(void* arg){
         int waitTime = rand() % 4 + 7;
         sleep(waitTime);
     }
-    printf("File Accessed: %s \n", arg);
+    printf("File Accessed: %s \n", temp);
+    free(temp);
     return arg;
-    
+
 }
