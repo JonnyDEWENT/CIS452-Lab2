@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <unistd.h>
 
 #define FOO 4096
 
@@ -33,14 +34,19 @@ int main ()
         exit (1);
     }
     m = (struct memory*)shmPtr;
-    
     while(1){
-        if(m->flag){
+        if(m->flag == 2){
             printf("Received %s", m->message);
             m->flag=0;
         }
-        
+        if(m->flag == 1){
+            printf("Received %s", m->message);
+            m->flag++;
+            while(m->flag==2){
+                ;
+            }
+        }
     }
-    
+
     return 0;
 }
