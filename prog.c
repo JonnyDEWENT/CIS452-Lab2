@@ -11,7 +11,7 @@
  * and execute the command, also the program will print each execution
  * CPU time and any involuntary context switches.
  *
- * @author Dewent, Jon
+ * @author D, Jonny
  * @author Li, Cheng
  * @version September 12, 2018
  **********************************************************************/
