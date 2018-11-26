@@ -6,6 +6,7 @@
 
 int main()
 {
+    
     DIR *dirPtr;
     struct dirent *entryPtr;
     
@@ -14,8 +15,8 @@ int main()
     while((entryPtr = readdir(dirPtr))){
         struct stat statBuf;
         stat(entryPtr->d_name, &statBuf);
-        printf()
-        printf("%-20s Size %lld bytes\n", entryPtr->d_name, statBuf.st_size);
+        printf("%u %u %lld\t", statBuf.st_uid, statBuf.st_gid, statBuf.st_size);
+        printf("%-20s\n", entryPtr->d_name);
     }
     
     closedir(dirPtr);
