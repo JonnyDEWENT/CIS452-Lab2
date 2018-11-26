@@ -15,6 +15,7 @@ int main()
     while((entryPtr = readdir(dirPtr))){
         struct stat statBuf;
         stat(entryPtr->d_name, &statBuf);
+        printf("inode %llu", statBuf.st_ino);
         printf("%u %u %lld\t", statBuf.st_uid, statBuf.st_gid, statBuf.st_size);
         printf("%-20s\n", entryPtr->d_name);
     }
